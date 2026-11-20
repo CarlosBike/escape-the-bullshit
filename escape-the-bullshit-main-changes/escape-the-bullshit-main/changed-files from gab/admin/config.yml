@@ -1,5 +1,5 @@
 # Editing screen configuration for Sveltia CMS.
-#
+#  This is bullshit!!!!!!!!!!
 # HOW THIS WORKS
 #   The backend is GITHUB. Sveltia reads and writes your content files by
 #   committing to the repository named below. Netlify is not involved, and
@@ -33,6 +33,7 @@ backend:
   repo: CarlosBike/escape-the-bullshit
   branch: main
   base_url: https://api.github.com
+  auth_endpoint: auth
 
 # Images and files you upload through the editing screen
 media_folder: static/uploads
@@ -40,8 +41,8 @@ public_folder: /uploads
 
 # Where the editing screen is running. Set to localhost while you work on
 # your own computer. Change these to your real address once you have hosting.
-site_url: http://localhost:8000
-display_url: http://localhost:8000
+site_url: https://6b0049d1397755773a245529--escape-the-bullshit.netlify.app
+display_url: https://6b0049d1397755773a245529--escape-the-bullshit.netlify.app
 
 publish_mode: simple
 

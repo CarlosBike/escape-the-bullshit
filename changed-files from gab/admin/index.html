@@ -32,6 +32,10 @@
   #status { padding: 12px 16px; border-radius: 8px; background: #fff8f2; border-left: 4px solid #b3401f; }
   #details { margin-top: 12px; font-size: 0.92rem; color: #5c5c62; }
   #details code { display: block; white-space: pre-wrap; margin-top: 8px; }
+  #attempts { list-style: none; padding: 0; margin: 10px 0 0; font-size: 0.93rem; }
+  #attempts li { padding: 4px 0; border-bottom: 1px dotted #ddd9d2; }
+  #attempts .ok { color: #3f7a3f; font-weight: 700; }
+  #attempts .bad { color: #b3401f; }
 </style>
 </head>
 <body>
@@ -40,35 +44,30 @@
 
   <div class="card">
     <p id="status">Loading the editing screen…</p>
+    <ul id="attempts"></ul>
     <div id="details"></div>
   </div>
 
   <div class="card">
     <h2>If the screen above does not come up</h2>
-    <p>Use the <strong>built-in local editor</strong> instead. It needs no internet connection, no GitHub account and no sign-in. It writes straight into your content files and rebuilds the site for you.</p>
+    <p>Use the <strong>built-in local editor</strong> on your own computer instead. It needs no internet connection, no GitHub account and no sign-in. It writes straight into your content files and rebuilds the site for you.</p>
+    <p class="quiet">The local editor runs from your own computer at <code>http://localhost:8000/admin/editor.html</code>, so it will not work on the published site — that is expected.</p>
     <p><a class="button" href="editor.html">Open the local editor</a></p>
   </div>
 
   <div class="card">
     <h2>First time here</h2>
     <ol>
-      <li>You need to be on the <strong>published Netlify address</strong> for this to sign in — not <code>localhost</code>. On localhost it will not sign in, and that is expected rather than a fault.</li>
-      <li>Sign in with the email address you registered with Netlify. You will get a confirmation link — click it.</li>
+      <li>Sign in with the email address you registered with Netlify, then click the confirmation link that arrives in your inbox.</li>
       <li>Choose <strong>Pages</strong> or <strong>Topics</strong> from the list on the left.</li>
       <li>Pick a topic, change a sentence, and press <strong>Save</strong>.</li>
-      <li>Netlify rebuilds the site by itself. Reload the site in your browser to see the change.</li>
+      <li>Sveltia commits the change to GitHub and Netlify rebuilds the site automatically. The change goes live within a minute or two.</li>
     </ol>
   </div>
 
   <div class="card">
-    <h2>If sign-in does not work</h2>
-    <p>On Netlify, check these three things:</p>
-    <ol>
-      <li><strong>Identity → Enable Identity</strong> is switched on.</li>
-      <li><strong>Identity → Registration → Confirm email</strong> is set, so that only you can register.</li>
-      <li><strong>Identity → Services → Git Gateway → Enable</strong> is switched on, and you have allowed access to your one repository.</li>
-    </ol>
-    <p>Also check that <code>site_url</code> and <code>display_url</code> in <code>admin/config.yml</code> match your real Netlify address.</p>
+    <h2>If saving fails</h2>
+    <p>Signing in but being unable to save usually means Git Gateway is not enabled. In Netlify go to <strong>Site configuration → Identity → Services → Git Gateway</strong> and enable it, allowing access to that one repository.</p>
   </div>
 
   <div class="card">
@@ -82,10 +81,10 @@
   </div>
 </div>
 
-<script
-  src="https://unpkg.com/@sveltia/cms@^2.0.0/dist/sveltia-cms.js"
-  onerror="window.__cmsScriptFailed = true;">
-</script>
+<script type="module" id="cms-local" src="sveltia-cms.js"></script>
+<script type="module" id="cms-unpkg" src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+<script type="module" id="cms-jsdelivr" src="https://cdn.jsdelivr.net/npm/@sveltia/cms/dist/sveltia-cms.js"></script>
+
 <script>
 (function () {
   'use strict';
@@ -95,9 +94,24 @@
   window.addEventListener('error', function (event) {
     errors.push(event.message + (event.filename ? ' (' + event.filename + ')' : ''));
   });
+  window.addEventListener('unhandledrejection', function (event) {
+    var reason = event.reason;
+    errors.push('Promise rejection: ' + (reason && reason.message ? reason.message : String(reason)));
+  });
 
   var status = document.getElementById('status');
   var details = document.getElementById('details');
+  var attempts = document.getElementById('attempts');
+
+  var tried = {};
+  var loaded = false;
+
+  function record(name, ok, note) {
+    var li = document.createElement('li');
+    li.className = ok ? 'ok' : 'bad';
+    li.textContent = name + ' — ' + (ok ? 'loaded' : 'failed') + (note ? ': ' + note : '');
+    attempts.appendChild(li);
+  }
 
   function show(html, tone) {
     status.innerHTML = html;
@@ -111,6 +125,30 @@
       errors.join('\n\n').replace(/</g, '&lt;') + '</code>';
   }
 
+  /* Each script tag above loads independently. Watch them for success or
+     failure and report each one by name, so a problem with a single source
+     is visible rather than hidden behind a general message. */
+  ['cms-local', 'cms-unpkg', 'cms-jsdelivr'].forEach(function (id) {
+    var tag = document.getElementById(id);
+    if (!tag) return;
+    var name = id.replace('cms-', '');
+    var label = name === 'local' ? 'local copy (admin/sveltia-cms.js)'
+              : name === 'unpkg' ? 'unpkg.com'
+              : 'jsDelivr';
+    tag.addEventListener('load', function () {
+      tried[name] = true;
+      record(label, true);
+      if (!loaded) {
+        loaded = true;
+        show('The editing screen is ready. Sign in with your Netlify email address to begin.', 'ok');
+      }
+    });
+    tag.addEventListener('error', function () {
+      tried[name] = true;
+      record(label, false, 'could not be downloaded');
+    });
+  });
+
   var waited = 0;
 
   var timer = setInterval(function () {
@@ -120,27 +158,25 @@
 
     if (root && root.innerHTML && root.innerHTML.trim().length > 0) {
       clearInterval(timer);
-      show('The editing screen is ready. Sign in with GitHub to begin.', 'ok');
+      show('The editing screen is ready. Sign in with your Netlify email address to begin.', 'ok');
       return;
     }
 
-    /* Sveltia takes over the whole page once it starts. If our text has gone,
+    /* The CMS takes over the whole page once it starts. If our text has gone,
        the editor is running and this message is simply no longer visible. */
     if (!document.getElementById('status')) {
       clearInterval(timer);
       return;
     }
 
-    if (window.__cmsScriptFailed) {
+    if (waited >= 45000) {
       clearInterval(timer);
-      show('<strong>The Sveltia script could not be downloaded.</strong> This screen needs an internet connection to unpkg.com. Either reconnect, or use the <a href="editor.html">built-in local editor</a>, which works offline.');
-      showErrors();
-      return;
-    }
-
-    if (waited >= 30000) {
-      clearInterval(timer);
-      show('<strong>The editing screen has not started.</strong> The usual causes are a blocked internet connection, or a problem with <code>admin/config.yml</code>. The <a href="editor.html">built-in local editor</a> works without any of that.');
+      var allTried = ['local', 'unpkg', 'jsdelivr'].every(function (k) { return tried[k]; });
+      if (allTried) {
+        show('<strong>The editing screen could not be started.</strong> None of the three script sources loaded, and the list above says which ones failed. This is a problem reaching those addresses, not a problem with your site. The <a href="editor.html">built-in local editor</a> works without any of it.');
+      } else {
+        show('<strong>The editing screen has not started.</strong> The list above shows which sources were tried. The usual cause is a blocked connection or an extension that stops scripts running. The <a href="editor.html">built-in local editor</a> works without any of that.');
+      }
       showErrors();
     }
   }, 500);

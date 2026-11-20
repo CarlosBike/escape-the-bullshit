@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editing — Escape the Bullshit</title>
+<style>
+  body {
+    margin: 0;
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1d1d1f;
+    background: #f7f6f3;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 1.8rem; margin: 0 0 10px; }
+  h2 { font-size: 1.15rem; margin: 0 0 10px; }
+  .card { background: #fff; border: 1px solid #ddd9d2; border-radius: 10px; padding: 18px 20px; margin: 16px 0; }
+  code { background: #efece6; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+  ol { padding-left: 22px; }
+  li { margin-bottom: 10px; }
+  .quiet { color: #5c5c62; }
+  #status { padding: 12px 16px; border-radius: 8px; background: #fff8f2; border-left: 4px solid #b3401f; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Escape the Bullshit — editing screen</h1>
+
+  <div class="card">
+    <p id="status">Loading the editing screen…</p>
+  </div>
+
+  <div class="card">
+    <h2>First time here</h2>
+    <ol>
+      <li>Check that <code>admin/config.yml</code> names your own GitHub repository in the <code>repo</code> line.</li>
+      <li>Sign in with GitHub. You will be asked to allow access to that one repository only.</li>
+      <li>Choose <strong>Pages</strong> or <strong>Topics</strong> from the list on the left.</li>
+      <li>Pick a topic, change a sentence, and press <strong>Save</strong>.</li>
+      <li>Back in your terminal, run <code>npm run sync</code> to pull the change down and rebuild.</li>
+      <li>Reload the site in your browser to see it.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Adding something new</h2>
+    <p>The editing screen can change anything that is already there. To add a brand new page or topic, copy a block in <code>admin/config.yml</code> and change its <code>file</code> and <code>label</code> — or just ask me to do it.</p>
+  </div>
+
+  <div class="card">
+    <h2>About the wording</h2>
+    <p>Several pages cover health, dental and financial matters. They say plainly when a question needs a doctor, a dentist or a qualified adviser rather than a website. Please keep those notes in place when you rewrite a page — they matter for the reader and for the site's credibility.</p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@sveltia/cms@^2.0.0/dist/sveltia-cms.js"></script>
+<script>
+  // Sveltia reads admin/config.yml on its own. We only check that it loaded.
+  setTimeout(function () {
+    var status = document.getElementById('status');
+    if (!status) return;
+    var root = document.querySelector('#nc-root, #sveltia-root, .sveltia-root');
+    if (root && root.innerHTML.trim().length > 0) {
+      status.innerHTML = 'The editing screen is ready. Sign in with GitHub to begin.';
+      status.style.background = '#eef4ee';
+      status.style.borderLeftColor = '#3f7a3f';
+    } else {
+      status.innerHTML = '<strong>The editing screen has not loaded.</strong> Check that <code>admin/config.yml</code> exists and that the <code>repo</code> line names your GitHub repository, then reload this page.';
+    }
+  }, 2500);
+</script>
+</body>
+</html>

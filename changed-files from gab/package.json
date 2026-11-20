@@ -1,0 +1,16 @@
+{
+  "name": "escape-the-bullshit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Escape the Bullshit - a plain, fast, private static website.",
+  "scripts": {
+    "build": "node tools/build.js",
+    "serve": "node tools/serve.js",
+    "sync": "node tools/sync.js",
+    "check": "node tools/check.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}

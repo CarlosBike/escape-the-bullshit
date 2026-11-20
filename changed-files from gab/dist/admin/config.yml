@@ -1,0 +1,148 @@
+# Editing screen configuration for Sveltia CMS.
+#
+# To use this:
+#   1. Create a GitHub repository named escape-the-bullshit
+#   2. Put this whole folder into it
+#   3. Change "repo" below to YOUR-USERNAME/escape-the-bullshit
+#   4. Open http://localhost:8000/admin/ and sign in with GitHub
+#
+# Docs: https://sveltia.cms/docs
+
+backend:
+  name: github
+  repo: YOUR-USERNAME/escape-the-bullshit
+  branch: main
+  base_url: https://api.github.com
+  auth_endpoint: auth
+
+# Images and files you upload through the editing screen
+media_folder: static/uploads
+public_folder: /uploads
+
+# Change this to your real address once the site is published
+site_url: https://escape-the-bullshit.example
+display_url: https://escape-the-bullshit.example
+
+publish_mode: simple
+
+collections:
+
+  # ---------------------------------------------------------------------
+  # TOPICS - the twelve articles.
+  #
+  # To add a new one, copy any block below, paste it at the end of this
+  # list, and change the "file" and the "label".
+  # ---------------------------------------------------------------------
+  - name: topics
+    label: Topics
+    label_singular: Topic
+    format: yaml-frontmatter
+    files:
+      - name: smartmeters
+        label: "Smart Meters"
+        file: content/topics/smartmeters.md
+        fields: &topicFields
+          - { name: title, label: Title, widget: string }
+          - { name: navTitle, label: Menu label, widget: string, required: false, hint: "Optional. A shorter version if the title is long." }
+          - { name: blurb, label: Short description, widget: text, hint: "One line. This appears in the list of topics." }
+          - { name: order, label: Order, widget: number, value: 50, hint: "Lower numbers appear first." }
+          - { name: featured, label: Show on the home page, widget: boolean, default: false }
+          - { name: lead, label: The introduction, widget: text }
+          - { name: claim, label: The claim, widget: text, hint: "What is actually being said, and what is really true." }
+          - { name: alternatives, label: Alternatives, widget: text, hint: "What to do instead." }
+          - { name: responsible, label: Who is responsible?, widget: text }
+          - { name: demand, label: What we need them to do, widget: text }
+          - { name: status, label: Have they done it yet?, widget: text }
+          - { name: sources, label: Sources, widget: text, hint: "Where a reader can check this for themselves." }
+          - { name: advice, label: Note about getting professional advice, widget: text, hint: "Say when a reader should speak to a doctor, dentist or adviser." }
+      - name: broadband
+        label: "Broadband"
+        file: content/topics/broadband.md
+        fields: *topicFields
+      - name: toothpaste
+        label: "Toothpaste"
+        file: content/topics/toothpaste.md
+        fields: *topicFields
+      - name: cooking-oils
+        label: "Cooking Oils"
+        file: content/topics/cooking-oils.md
+        fields: *topicFields
+      - name: location-on-your-phone
+        label: "Location on Your Phone"
+        file: content/topics/location-on-your-phone.md
+        fields: *topicFields
+      - name: supermarkets
+        label: "Supermarkets"
+        file: content/topics/supermarkets.md
+        fields: *topicFields
+      - name: credit-scores
+        label: "Credit Scores"
+        file: content/topics/credit-scores.md
+        fields: *topicFields
+      - name: qr-codes
+        label: "QR Codes"
+        file: content/topics/qr-codes.md
+        fields: *topicFields
+      - name: amalgam-mercury-fillings
+        label: "Amalgam Fillings"
+        file: content/topics/amalgam-mercury-fillings.md
+        fields: *topicFields
+      - name: cash-vs-card
+        label: "Cash vs Card"
+        file: content/topics/cash-vs-card.md
+        fields: *topicFields
+      - name: soya-milk
+        label: "Soya Milk"
+        file: content/topics/soya-milk.md
+        fields: *topicFields
+      - name: the-bbc
+        label: "The BBC"
+        file: content/topics/the-bbc.md
+        fields: *topicFields
+
+  # ---------------------------------------------------------------------
+  # PAGES - the ordinary pages.
+  #
+  # To add a new one, copy any block below, paste it at the end of this
+  # list, and change the "file" and the "label".
+  # ---------------------------------------------------------------------
+  - name: pages
+    label: Pages
+    label_singular: Page
+    format: yaml-frontmatter
+    files:
+      - name: home
+        label: "Home"
+        file: content/pages/home.md
+        fields: &pageFields
+          - { name: title, label: Page title, widget: string }
+          - { name: navLabel, label: Menu label, widget: string, required: false, hint: "What appears in the menu. Leave blank to use the title." }
+          - { name: order, label: Menu order, widget: number, value: 50, hint: "Lower numbers appear first." }
+          - { name: nav, label: Show in the menu, widget: boolean, default: true }
+          - { name: hero, label: Show the big picture at the top, widget: boolean, default: false }
+          - { name: description, label: Description, widget: text, hint: "Shown in search results. One or two sentences." }
+          - { name: body, label: Page content, widget: markdown }
+      - name: lists
+        label: "Lists"
+        file: content/pages/lists.md
+        fields: *pageFields
+      - name: about
+        label: "About"
+        file: content/pages/about.md
+        fields: *pageFields
+      - name: contact
+        label: "Contact"
+        file: content/pages/contact.md
+        fields: *pageFields
+      - name: people
+        label: "People's Voices"
+        file: content/pages/people.md
+        fields: *pageFields
+      - name: privacy
+        label: "Privacy Policy"
+        file: content/pages/privacy.md
+        fields: *pageFields
+      - name: terms
+        label: "Terms and Conditions"
+        file: content/pages/terms.md
+        fields: *pageFields

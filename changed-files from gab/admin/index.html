@@ -52,13 +52,23 @@
   <div class="card">
     <h2>First time here</h2>
     <ol>
-      <li>Check that <code>admin/config.yml</code> names your own GitHub repository in the <code>repo</code> line.</li>
-      <li>Sign in with GitHub. You will be asked to allow access to that one repository only.</li>
+      <li>You need to be on the <strong>published Netlify address</strong> for this to sign in — not <code>localhost</code>. On localhost it will not sign in, and that is expected rather than a fault.</li>
+      <li>Sign in with the email address you registered with Netlify. You will get a confirmation link — click it.</li>
       <li>Choose <strong>Pages</strong> or <strong>Topics</strong> from the list on the left.</li>
       <li>Pick a topic, change a sentence, and press <strong>Save</strong>.</li>
-      <li>Back in your terminal, run <code>npm run sync</code> to pull the change down and rebuild.</li>
-      <li>Reload the site in your browser to see it.</li>
+      <li>Netlify rebuilds the site by itself. Reload the site in your browser to see the change.</li>
     </ol>
+  </div>
+
+  <div class="card">
+    <h2>If sign-in does not work</h2>
+    <p>On Netlify, check these three things:</p>
+    <ol>
+      <li><strong>Identity → Enable Identity</strong> is switched on.</li>
+      <li><strong>Identity → Registration → Confirm email</strong> is set, so that only you can register.</li>
+      <li><strong>Identity → Services → Git Gateway → Enable</strong> is switched on, and you have allowed access to your one repository.</li>
+    </ol>
+    <p>Also check that <code>site_url</code> and <code>display_url</code> in <code>admin/config.yml</code> match your real Netlify address.</p>
   </div>
 
   <div class="card">

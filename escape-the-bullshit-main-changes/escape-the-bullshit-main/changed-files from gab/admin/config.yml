@@ -1,22 +1,26 @@
 # Editing screen configuration for Sveltia CMS.
 #
 # HOW THIS WORKS
-#   The site is published on Netlify. This file tells the editing screen
-#   which GitHub repository to read and write, and on which branch.
+#   Sveltia is a free, open-source editing screen that runs in your browser.
+#   It talks to GitHub directly through the GitHub API. Nothing else is
+#   needed - no database, no server, no hosting provider.
 #
-#   The editing screen lives at  YOUR-NETLIFY-ADDRESS/admin/
-#   Sign in with GitHub. Each save is committed to the repository, and
-#   Netlify rebuilds the site automatically.
+#   When you press Save, Sveltia commits the change to your GitHub
+#   repository. If the site is also published, the host rebuilds it.
 #
-#   While you work on your own computer, use the built-in local editor:
+#   WHERE TO FIND IT
+#     On your own computer:  http://localhost:8000/admin/
+#       Start it with "npm run serve" from the project folder.
+#       Sign-in works here. This is where you edit.
+#
+#     On a published site:   https://YOUR-ADDRESS/admin/
+#       Only if you later publish the site somewhere.
+#
+#   IF THE SCREEN WILL NOT LOAD
+#     Use the built-in local editor instead:
 #       http://localhost:8000/admin/editor.html
-#   It needs no internet connection and no sign-in.
-#
-# TO USE THE SVELTIA SCREEN
-#   1. Publish the site on Netlify (README.md, section 8)
-#   2. Put your real Netlify address in site_url and display_url below
-#   3. Push this file to GitHub and wait for the deploy
-#   4. Open YOUR-NETLIFY-ADDRESS/admin/ and sign in with GitHub
+#     It needs no internet connection, no GitHub account and no sign-in.
+#     It writes straight into your content files and rebuilds the site.
 #
 # Docs: https://sveltia.cms/docs
 
@@ -30,10 +34,10 @@ backend:
 media_folder: static/uploads
 public_folder: /uploads
 
-# Your real Netlify address. Netlify gives it to you when the site is first
-# deployed - it may not be exactly the one written below.
-site_url: https://escape-the-bullshit.netlify.app
-display_url: https://escape-the-bullshit.netlify.app
+# While you work on your own computer. Change these to your real address
+# if you publish the site later.
+site_url: http://localhost:8000
+display_url: http://localhost:8000
 
 publish_mode: simple
 

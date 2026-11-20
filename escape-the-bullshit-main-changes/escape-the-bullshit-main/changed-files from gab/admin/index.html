@@ -49,26 +49,22 @@
   </div>
 
   <div class="card">
-    <h2>If the screen above does not come up</h2>
-    <p>Use the <strong>built-in local editor</strong> on your own computer instead. It needs no internet connection, no GitHub account and no sign-in. It writes straight into your content files and rebuilds the site for you.</p>
-    <p class="quiet">The local editor runs from your own computer at <code>http://localhost:8000/admin/editor.html</code>, so it will not work on the published site — that is expected.</p>
-    <p><a class="button" href="editor.html">Open the local editor</a></p>
-  </div>
-
-  <div class="card">
     <h2>First time here</h2>
     <ol>
-      <li>Sign in with GitHub. Approve access to the one repository and you are taken back here.</li>
+      <li>Press <strong>Log in with GitHub</strong>. Approve access to the one repository and you are taken back here.</li>
       <li>Choose <strong>Pages</strong> or <strong>Topics</strong> from the list on the left.</li>
       <li>Pick a topic, change a sentence, and press <strong>Save</strong>.</li>
-      <li>Sveltia commits the change to GitHub and Netlify rebuilds the site automatically. The change goes live within a minute or two.</li>
+      <li>Sveltia commits the change to GitHub for you. Run <code>npm run sync</code> on your own computer to pull it down and rebuild.</li>
+      <li>Reload the site in your browser to see it.</li>
     </ol>
   </div>
 
   <div class="card">
     <h2>If sign-in does not work</h2>
-    <p>Check that <code>admin/config.yml</code> says <code>name: github</code> and <code>repo: CarlosBike/escape-the-bullshit</code>, and that <code>site_url</code> matches the address this page is served from.</p>
-    <p>You can also sign in with a GitHub Personal Access Token instead of the GitHub button. Create one in GitHub under <strong>Settings → Developer settings → Personal access tokens</strong>, give it read and write access to this one repository, and paste it into the token field on the sign-in screen.</p>
+    <p>Check that <code>admin/config.yml</code> contains <code>name: github</code> and <code>repo: CarlosBike/escape-the-bullshit</code>. The old Netlify "Git Gateway" backend is no longer supported.</p>
+    <p>If the screen asks for a token instead of offering a GitHub button, create a fine-grained token in GitHub under <strong>Settings → Developer settings → Personal access tokens</strong>, limited to this one repository, with <strong>Contents: read and write</strong>. GitHub shows the token only once.</p>
+    <p>Your offline editor always works and needs no sign-in at all:</p>
+    <p><a class="button" href="editor.html">Open the local editor</a></p>
   </div>
 
   <div class="card">
@@ -141,7 +137,7 @@
       record(label, true);
       if (!loaded) {
         loaded = true;
-        show('The editing screen is ready. Sign in with GitHub to begin.', 'ok');
+        show('The editing screen is ready. Press <strong>Log in with GitHub</strong> to begin.', 'ok');
       }
     });
     tag.addEventListener('error', function () {
@@ -159,7 +155,7 @@
 
     if (root && root.innerHTML && root.innerHTML.trim().length > 0) {
       clearInterval(timer);
-      show('The editing screen is ready. Sign in with GitHub to begin.', 'ok');
+      show('The editing screen is ready. Press <strong>Log in with GitHub</strong> to begin.', 'ok');
       return;
     }
 

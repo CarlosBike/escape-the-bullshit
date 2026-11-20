@@ -1,304 +1,204 @@
-# Escape the Bullshit — website
+# Escape the Bullshit
 
-A plain HTML, CSS and JavaScript website. Fast, private, no tracking, no advertising, and no database you have to pay for.
-
-You can edit it three ways, and they all write to the same files:
-
-1. **The editing screen** — a browser page that looks like a normal website editor. No code needed.
-2. **A plain text editor** — every page is a text file you can open in Notepad.
-3. **Ask me** — send me a message and I'll make the change for you.
+A fast, plain, advertisement-free website. No database, no tracking, no adverts.
+Twelve topic articles, seven ordinary pages, and two editing screens.
 
 ---
 
 ## 1. What you need
 
-- **Node.js** — one download from [nodejs.org](https://nodejs.org). Choose the **LTS** version, the one marked "Recommended for most users". Run the installer and accept the defaults. You only need this once.
+**Node.js** — one download from [nodejs.org](https://nodejs.org). Take the
+"LTS" version. That is the only thing you need to install. You have it already.
 
-Nothing else. No account, no hosting, no cost.
+Everything else runs from a terminal window.
 
 ---
 
-## 2. The daily routine
+## 2. Your daily routine
 
-Open a terminal in your site folder, then run two commands.
-
-**Windows**
-
-- Right-click the folder → **Open in Terminal** (Windows 11), or **Open PowerShell window here** (Windows 10).
-- Or open PowerShell anywhere and type `cd` followed by the folder path.
-
-**Mac**
-
-- Right-click the folder → **New Terminal at Folder**.
-
-Then:
+Open a terminal in the project folder (see section 11 if you are not sure how),
+then:
 
 ```powershell
-npm run build
-npm run serve
+npm run build     # assemble the site into the dist/ folder
+npm run serve     # start the preview at http://localhost:8000
 ```
 
-- `npm run build` turns your content files into the finished website.
-- `npm run serve` starts a local preview.
-
-Then open your browser:
+Then open:
 
 | What | Where |
 |---|---|
-| The website | `http://localhost:8000` |
-| The editing screen | `http://localhost:8000/admin/` |
+| The website | <http://localhost:8000> |
+| The built-in editing screen | <http://localhost:8000/admin/editor.html> |
+| The Sveltia editing screen | <https://YOUR-NETLIFY-ADDRESS/admin/> — sign-in works on the published site, not on `localhost` |
 
-Press **Ctrl+C** in the terminal to stop the preview. Run `npm run serve` again whenever you want to look at the site.
+**To stop the preview server:** press `Ctrl+C` in the terminal.
 
-**If PowerShell says `npm is not recognised`** — close the terminal, open a new one, and try again. Node installs its path when it installs, so a terminal opened beforehand won't know about it.
-
----
-
-## 3. Editing content
-
-### The editing screen
-
-Go to `http://localhost:8000/admin/`, sign in, and you will see **Pages** and **Topics** in the sidebar.
-
-- **Topics** — the twelve articles. Each one is a set of labelled boxes: the title, the short description, the introduction, the claim, the alternatives, who is responsible, what we need them to do, whether they have done it yet, the sources, and the note about professional advice.
-- **Pages** — Home, Lists, About, Contact, People's Voices, Privacy and Terms.
-
-Change the wording in a box, press **Save**, and it is stored.
-
-**Important:** the editing screen saves to GitHub, not to your computer. After saving, run `npm run sync` in the terminal to pull the change down and rebuild, then reload the page in your browser.
-
-### A plain text editor
-
-Every article is one file. Open it in Notepad and edit it directly.
-
-```text
-content\topics\broadband.md
-```
-
-The text at the top is the metadata:
-
-```yaml
-title: Broadband
-navTitle: Broadband
-blurb: Stop paying for a fixed broadband line you don't need.
-order: 2
-featured: true
-```
-
-The text below is the article, one field per section:
-
-```yaml
-lead: >
-  A fixed broadband contract is an easy expense to overlook...
-claim: >
-  Most people use a tiny fraction of the data their fixed line provides...
-```
-
-Save the file, run `npm run build`, reload your browser. Done.
-
-**Two rules for editing by hand:**
-
-- A `>` on its own line means "the text on the following indented lines is one paragraph". Keep the indentation.
-- Lines that start with two spaces belong to the paragraph above. Lines with no indentation start a new field.
+**If you see "address already in use :::8000"** — an older copy of the server is
+still running. Close that other terminal window, or press `Ctrl+C` in it, then
+run `npm run serve` again.
 
 ---
 
-## 4. Adding a new article
+## 3. Three ways to change content
 
-There are two steps: creating the file, and telling the editing screen about it.
+They all write to the same files, so use whichever you like.
 
-**1. Copy an existing file.** For example, copy `content\topics\broadband.md` to `content\topics\my-new-topic.md`.
+**A. The built-in editing screen** (easiest). Open
+`http://localhost:8000/admin/editor.html`. Pick a topic or page from the list on
+the left, type in the labelled boxes on the right, press **Save and rebuild**.
+The site is rebuilt on the spot.
 
-**2. Open the copy and change:**
+**B. The Sveltia screen** (for use once the site is published on Netlify). It
+looks more like a proper content management system and works from any device.
+It signs in on the published Netlify address only, so it will not sign in on
+`localhost`. See section 8.
 
-- `title` — the heading on the page.
-- `navTitle` — the shorter name in the menu (optional).
-- `blurb` — one line describing it. This shows in the lists.
-- `order` — a number that decides the order. Lower comes first. Use `13` for a new one, then renumber if you want it higher.
-- `featured: true` — only if you want it on the home page.
+**C. A text editor.** Open any file in `content/` in Notepad and change the
+words. Run `npm run build` afterwards. Useful for copying a whole article.
 
-Then rewrite the text under each field.
+---
 
-**3. Add it to the editing screen.** Open `admin\config.yml`, find the **Topics** section, and copy any block from it — for example the Broadband one — pasting the copy at the end of the list. Then change three lines:
+## 4. Adding a new topic (article)
 
-```yaml
-      - name: my-new-topic
-        label: "My New Topic"
-        file: content/topics/my-new-topic.md
-```
+1. Copy any file in `content/topics/` — say `broadband.md` — and name the copy
+   after your new topic, e.g. `energy- bills.md` should be `energy-bills.md`
+   (lowercase, hyphens, no spaces).
+2. Open it and change the `title`, `navTitle`, `blurb` and `order`. Leave the
+   section headings alone.
+3. Run `npm run build`.
+4. To make it appear in the editing screen, copy a block in
+   `admin/config.yml` (the `topics` list) and change its `file` and `label`.
+   Or just ask me to do it.
 
-**4. Run `npm run build`.**
+The sections mean:
 
-That's it. The article appears in the lists, gets its own page at `/topics/my-new-topic/`, and shows up in the editing screen.
-
-**The file name is the address.** `my-new-topic.md` becomes `/topics/my-new-topic/`. If you rename the file, the old address stops working.
+| Field | What it is for |
+|---|---|
+| `title` | The heading on the page |
+| `navTitle` | Shorter label if the title is long |
+| `blurb` | One line, shown in the list of topics |
+| `order` | Lower numbers come first |
+| `featured` | Tick to show it on the home page |
+| `lead` | The short introduction |
+| `claim` | What is being said, and what is really true |
+| `alternatives` | What to do instead |
+| `responsible` | Who is responsible |
+| `demand` | What we need them to do |
+| `status` | Have they done it yet? |
+| `sources` | Where the reader can check it themselves |
+| `advice` | When to speak to a doctor, dentist or adviser |
 
 ---
 
 ## 5. Adding a new page
 
-Same idea.
-
-**1. Copy `content\pages\about.md` to `content\pages\new-page.md`.**
-
-**2. Set in the text at the top:**
-
-```yaml
-title: My New Page
-navLabel: New Page
-order: 8
-nav: true
-description: One sentence for search results.
-```
-
-**3. Write the page content below.**
-
-**4. Add it to `admin\config.yml`** in the **Pages** section, the same way as for an article:
-
-```yaml
-      - name: new-page
-        label: "New Page"
-        file: content/pages/new-page.md
-```
-
-**5. Run `npm run build`.**
-
-Set `nav: false` if you want the page to exist without appearing in the menu.
-
-**Links between pages** use a simple form:
-
-```html
-<a href="page:lists">See the lists</a>
-```
-
-and links to articles use:
-
-```html
-<a href="topic:broadband">Broadband</a>
-```
-
-The build turns those into the right address on every page, including the article pages. You can also write them as ordinary Markdown links — `[See the lists](page:lists)`.
-
-**Your email address** is written as `[[email]]` anywhere in the text. The build fills it in from `content\site.json`, so you only ever change it in one place.
+Same idea. Copy a file in `content/pages/` — `about.md` is a good plain one —
+name the copy after your page, give it a `title`, a `description` and an
+`order`, write the body underneath the `---` lines, then run `npm run build`.
 
 ---
 
 ## 6. Site-wide settings
 
-`content\site.json` holds the things that appear in more than one place:
-
-```json
-{
-  "title": "Escape the Bullshit",
-  "tagline": "Free up your life",
-  "email": "engineerone500@hotmail.co.uk",
-  "year": 2026,
-  "hero": { "image": "...", "title": "...", "text": "..." },
-  "donateUrl": "https://square.link/u/tGMvCBvv?src=embed",
-  "social": { "facebook": "", "twitter": "", "instagram": "" }
-}
-```
-
-**Change your email address here**, and it updates everywhere — including the Privacy Policy and Terms pages.
+`content/site.json` holds the things that appear across the whole site: the
+site title, the tagline, your email address, the picture at the top of the
+home page, the donate link and your social links. Change your email there and
+it changes everywhere at once.
 
 ---
 
 ## 7. Changing the look
 
-The colours and spacing are all at the top of `static\style.css`:
+`static/style.css`. The colours are in the `:root` block at the very top:
 
 ```css
-:root {
-  --bg: #f7f6f3;
-  --accent: #b3401f;
-  ...
-}
+--accent: #b3401f;   /* the main colour */
+--bg:     #f7f6f3;   /* the page background */
 ```
 
-Change `--accent` and the buttons and links change colour. The site automatically uses a dark theme when your device is set to dark mode.
+Change the value, run `npm run build`, and look. The dark version of the site
+is further down the file, under `prefers-color-scheme: dark`.
 
 ---
 
-## 8. GitHub — what it is and why
+## 8. GitHub and Netlify
 
-**GitHub stores your website files.** That is all it does. Think of it as a very reliable backup of the folder on your computer, plus a record of every change you have ever made.
+### What GitHub is for
 
-That record is the useful part. If you edit something and make a mess of it, you can look at what it was before and undo it. If your computer dies, your site is still there.
+It holds a copy of your site and a record of every change you make. If you
+break something, you can go back to an earlier version. You have already put
+the site there.
 
-**The editing screen writes to GitHub.** It cannot write to your computer directly, because a web page in your browser is not allowed to reach out and change files on your hard drive. GitHub is the meeting point: the screen saves there, and `npm run sync` copies it back down to your computer and rebuilds.
+### What Netlify is for
 
-### Setting it up, once
+Netlify turns the GitHub copy into a live website and rebuilds it whenever you
+save something in the editing screen.
 
-**1. Create the repository.** On github.com, click **New repository**. Name it `escape-the-bullshit`. Set it to **Private** for now — you can make it public later.
+### Connecting Netlify — the steps
 
-**2. Install Git.** Download from [git-scm.com/download/win](https://git-scm.com/download/win) (Windows) or run `xcode-select --install` in Terminal (Mac).
+1. Sign up at [netlify.com](https://www.netlify.com) (free).
+2. **Add new site → Import an existing project → GitHub.**
+3. Authorise Netlify to see your repositories, and choose
+   `CarlosBike/escape-the-bullshit`.
+4. Check the two build settings. `netlify.toml` already sets them, so they
+   should already read:
+   - **Build command:** `npm run build`
+   - **Publish directory:** `dist`
+5. Click **Deploy site.** Your site is live at something like
+   `https://escape-the-bullshit.netlify.app`.
+6. **Site configuration → Identity → Enable Identity.**
+7. **Identity → Registration → Confirm email** — so only you can register.
+8. **Identity → Services → Git Gateway → Enable**, and allow access to that
+   one repository.
+9. Open `admin/config.yml` and put your real Netlify address into
+   `site_url` and `display_url`. The one written there is a guess.
+10. Commit and push that change — Netlify rebuilds.
+11. Open `https://escape-the-bullshit.netlify.app/admin/` and sign in with the
+    email address you registered with Netlify. You will get a confirmation
+    link — click it.
 
-**3. Send your files to GitHub.** In the terminal, in your site folder:
+Then the editing screen works from any device, and every save is published
+automatically.
 
-```powershell
-git init
-git add .
-git commit -m "First version of the site"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/escape-the-bullshit.git
-git push -u origin main
-```
+### If sign-in does not work
 
-Replace `YOUR-USERNAME` with your GitHub username.
+Check these four things, in this order:
 
-If Git asks for a password, use a **Personal Access Token**, not your account password. GitHub will offer to create one — give it permission to read and write that one repository, then paste the token in when asked.
+| Check | Where |
+|---|---|
+| Identity is switched on | Netlify → Site configuration → Identity → Enable Identity |
+| Only you can register | Netlify → Identity → Registration → Confirm email |
+| Git Gateway is switched on | Netlify → Identity → Services → Git Gateway → Enable |
+| The address is right | `admin/config.yml` → `site_url` and `display_url` |
 
-**4. Tell the editing screen where your repository is.** Open `admin\config.yml` and change one line:
+You must be on the **published Netlify address** for sign-in to work. On
+`localhost` it will not sign in — that is expected, and it is not a fault.
 
-```yaml
-repo: YOUR-USERNAME/escape-the-bullshit
-```
-
-**5. Restart the preview** and open `http://localhost:8000/admin/`.
-
-### The everyday loop
+### The rhythm after that
 
 ```text
-   You edit in the browser
-            |
-            v
-   Saved to GitHub (a new commit)
-            |
-            v
-   npm run sync   (pulls it down, rebuilds)
-            |
-            v
-   Reload your browser to see it
+edit in the screen  →  save  →  Netlify rebuilds  →  site updates
 ```
+
+Nothing is needed from your computer for that to happen. If you also want the
+change on your own computer, run `npm run sync` there.
 
 ---
 
-## 9. The folder
+## 9. Folder layout
 
 ```text
-content/
-  site.json          settings for the whole site
-  pages/             7 pages: home, lists, about, contact, people, privacy, terms
-  topics/            12 articles, one file each
-static/
-  style.css          all the styling
-  site.js            menu, form, counter, poll
-  uploads/           images you add through the editing screen
-admin/
-  index.html         the editing screen
-  config.yml         how the editing screen is set up
-tools/
-  build.js           turns content into the website
-  serve.js           the local preview
-  markdown.js        renders the text
-  yaml.js            reads the settings at the top of each content file
-  sync.js            pull from GitHub, then build
-  check.js           checks the content without building
-package.json
-dist/                the finished website (generated — never edit this)
+content/          all the words - safe to edit
+  site.json       settings for the whole site
+  pages/          the 7 ordinary pages
+  topics/         the 12 articles
+static/           style.css, site.js, uploaded images
+admin/            the editing screens and their settings
+tools/            the small programs that build the site
+dist/             the finished site - do not edit, it is overwritten
+netlify.toml      the build settings Netlify uses
 ```
-
-**Never edit anything in `dist/`.** It is deleted and rebuilt every time.
 
 ---
 
@@ -306,43 +206,61 @@ dist/                the finished website (generated — never edit this)
 
 | Command | What it does |
 |---|---|
-| `npm run build` | Build the website into `dist/` |
-| `npm run serve` | Preview at `http://localhost:8000` |
-| `npm run sync` | Pull from GitHub, then build |
-| `npm run check` | Check the content files for mistakes |
+| `npm run build` | Assembles the site into `dist/` |
+| `npm run serve` | Starts the preview at `localhost:8000` |
+| `npm run check` | Checks the content files for missing fields, without building |
+| `npm run sync` | Pulls changes from GitHub and rebuilds |
 
 ---
 
-## 11. What is deliberately not finished
+## 11. Opening a terminal in a folder
 
-**The contact form does not send anything.** It checks the form and shows a confirmation, but there is no server behind it. When you publish, you have three choices:
+**Windows 11:** right-click the folder → **Open in Terminal**.
 
-1. Use Netlify Forms — you paste one line into the form.
-2. Use a form service such as Formspree.
-3. Replace the form with a plain email address.
+**Windows 10:** right-click the folder → **Open in Windows Terminal**, or
+*Open PowerShell window here*. If that option is missing, open PowerShell
+anywhere and type `cd` followed by the folder path.
 
-**The People's Voices counter and poll are local only.** They count in your own browser and go nowhere. When the site is live, they need a shared counter service or a small backend.
-
-**Publishing.** Not set up yet. When you are ready: connect the GitHub repository to Netlify or Cloudflare Pages, set the build command to `npm run build` and the publish directory to `dist/`. The same commit you test locally becomes the live site.
-
-**Social links.** There are no social icons yet. The addresses go in `content\site.json` under `social`, ready for when you have them.
+PowerShell is fine — everything in this document works in it. You do not need
+CMD, and Node.js does not have its own command prompt.
 
 ---
 
-## 12. Before you publish
+## 12. Deliberately not finished
 
-- [ ] Read every page once, and click every link.
-- [ ] Check the contact form works.
-- [ ] Update the Privacy Policy to name the hosting provider you actually use.
-- [ ] Update the email address in `content\site.json`.
-- [ ] Set `site_url` in `admin\config.yml` to your real address.
-- [ ] Check the wording on the health and dental pages still says when to ask a professional.
-- [ ] Publish.
+**The contact form does not send anything yet.** It checks the form and shows
+a confirmation. When you publish, it needs connecting to a real inbox
+(Netlify Forms is the easy option) or replacing with a plain email address.
+
+**The People's Voices counter and poll are stored only in your own browser.**
+They count on your own device and go nowhere. A shared total needs a small
+backend, which can be added later.
+
+**Social links.** The placeholders are in `content/site.json`. Put your real
+profile URLs in when you have them.
+
+**Clean addresses.** Articles are currently at `/topics/broadband/`. Nicer
+addresses such as `/broadband/` can be added later with redirect rules at the
+hosting stage.
 
 ---
 
-## 13. A note on the writing
+## 13. Before you publish
 
-Several articles cover health, dental and financial matters. They are written to be accurate, and they say plainly when a question needs a doctor, a dentist or a qualified adviser rather than a website.
+- [ ] Check the contact page works and says where messages should go.
+- [ ] Read the Privacy Policy and Terms. They describe what the site actually
+      does. If you add a form, a counter or an analytics script, they need
+      updating to match.
+- [ ] Put your real Netlify address into `site_url` and `display_url` in
+      `admin/config.yml`.
+- [ ] Check every page on a phone.
+- [ ] Consider your own domain name later, through Netlify's domain settings.
 
-**Please keep those notes in place when you rewrite a page.** They matter for the reader, and they matter for the site's credibility — a site that says "ask your dentist" is trusted more than one that says "do this instead".
+---
+
+## 14. A note on the writing
+
+Several pages cover health, dental and financial matters. They say plainly
+when a question needs a doctor, a dentist or a qualified adviser rather than
+a website. Please keep those notes in place when you rewrite a page. They
+matter for the reader, and they matter for the site's credibility.

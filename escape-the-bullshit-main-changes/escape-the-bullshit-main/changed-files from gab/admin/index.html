@@ -56,16 +56,19 @@
   </div>
 
   <div class="card">
-    <h2>Signing in</h2>
-    <p>The backend is <strong>GitHub</strong>, so Sveltia needs to prove who you are before it can commit anything. How you do that depends on where this screen is running.</p>
-    <p><strong>On your own computer</strong> (localhost), use a <strong>Personal Access Token</strong>. Make one at <code>github.com/settings/tokens</code>, choose <em>Fine-grained tokens</em>, give it <strong>Contents: Read and write</strong> on the one repository, and paste it when the screen asks. No hosting is needed for this.</p>
-    <p><strong>On a published site</strong>, "Log in with GitHub" needs a server to receive the callback. That is what a host provides. Leave it until you have hosting.</p>
+    <h2>First time here</h2>
+    <ol>
+      <li>Sign in with GitHub. Approve access to the one repository and you are taken back here.</li>
+      <li>Choose <strong>Pages</strong> or <strong>Topics</strong> from the list on the left.</li>
+      <li>Pick a topic, change a sentence, and press <strong>Save</strong>.</li>
+      <li>Sveltia commits the change to GitHub and Netlify rebuilds the site automatically. The change goes live within a minute or two.</li>
+    </ol>
   </div>
 
   <div class="card">
-    <h2>If saving fails</h2>
-    <p>Signing in but being unable to save usually means the token lacks write permission. Check that the token has <strong>Contents: Read and write</strong> on <code>CarlosBike/escape-the-bullshit</code>, not just read.</p>
-    <p>Also check the <code>repo:</code> line in <code>admin/config.yml</code> matches your repository exactly, and that <code>branch:</code> names the branch you actually push to.</p>
+    <h2>If sign-in does not work</h2>
+    <p>Check that <code>admin/config.yml</code> says <code>name: github</code> and <code>repo: CarlosBike/escape-the-bullshit</code>, and that <code>site_url</code> matches the address this page is served from.</p>
+    <p>You can also sign in with a GitHub Personal Access Token instead of the GitHub button. Create one in GitHub under <strong>Settings → Developer settings → Personal access tokens</strong>, give it read and write access to this one repository, and paste it into the token field on the sign-in screen.</p>
   </div>
 
   <div class="card">

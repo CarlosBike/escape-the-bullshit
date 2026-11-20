@@ -1,30 +1,22 @@
 # Editing screen configuration for Sveltia CMS.
-#  This is bullshit!!!!!!!!!!
+#
 # HOW THIS WORKS
-#   The backend is GITHUB. Sveltia reads and writes your content files by
-#   committing to the repository named below. Netlify is not involved, and
-#   neither is Netlify Identity or Git Gateway - Sveltia dropped Git Gateway,
-#   so any config that still says "name: git-gateway" now fails outright.
+#   The site is published on Netlify. This file tells the editing screen
+#   which GitHub repository to read and write, and on which branch.
 #
-#   Sveltia needs to prove who you are before it can commit. There are two
-#   ways, and which one works depends on where the screen is running:
+#   The editing screen lives at  YOUR-NETLIFY-ADDRESS/admin/
+#   Sign in with GitHub. Each save is committed to the repository, and
+#   Netlify rebuilds the site automatically.
 #
-#   A. A PERSONAL ACCESS TOKEN - works on localhost, no hosting needed.
-#      Make a fine-grained token at github.com/settings/tokens, giving it
-#      "Contents: Read and write" on this one repository. Open the editing
-#      screen and paste the token when it asks. This is the route to use
-#      while you are working locally and have not published anything.
-#
-#   B. GITHUB OAUTH - needs a deployed auth endpoint.
-#      The "Log in with GitHub" button sends you to GitHub and back, which
-#      requires a server to receive the callback. That server is what a host
-#      provides. Leave this until you have hosting; it cannot work on a
-#      plain localhost with no server behind it.
-#
-#   If the screen will not start at all, use the offline local editor:
+#   While you work on your own computer, use the built-in local editor:
 #       http://localhost:8000/admin/editor.html
-#   It needs no account, no token and no internet connection. It is the
-#   fallback, and it is not a lesser tool - it edits the same files.
+#   It needs no internet connection and no sign-in.
+#
+# TO USE THE SVELTIA SCREEN
+#   1. Publish the site on Netlify (README.md, section 8)
+#   2. Put your real Netlify address in site_url and display_url below
+#   3. Push this file to GitHub and wait for the deploy
+#   4. Open YOUR-NETLIFY-ADDRESS/admin/ and sign in with GitHub
 #
 # Docs: https://sveltia.cms/docs
 
@@ -33,16 +25,15 @@ backend:
   repo: CarlosBike/escape-the-bullshit
   branch: main
   base_url: https://api.github.com
-  auth_endpoint: auth
 
 # Images and files you upload through the editing screen
 media_folder: static/uploads
 public_folder: /uploads
 
-# Where the editing screen is running. Set to localhost while you work on
-# your own computer. Change these to your real address once you have hosting.
-site_url: https://6b0049d1397755773a245529--escape-the-bullshit.netlify.app
-display_url: https://6b0049d1397755773a245529--escape-the-bullshit.netlify.app
+# Your real Netlify address. Netlify gives it to you when the site is first
+# deployed - it may not be exactly the one written below.
+site_url: https://escape-the-bullshit.netlify.app
+display_url: https://escape-the-bullshit.netlify.app
 
 publish_mode: simple
 

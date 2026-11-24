@@ -36,6 +36,17 @@
   #attempts li { padding: 4px 0; border-bottom: 1px dotted #ddd9d2; }
   #attempts .ok { color: #3f7a3f; font-weight: 700; }
   #attempts .bad { color: #b3401f; }
+  #token {
+    width: 100%;
+    padding: 11px 12px;
+    font: inherit;
+    font-size: 0.95rem;
+    border: 1px solid #ddd9d2;
+    border-radius: 8px;
+    background: #fff;
+    color: #1d1d1f;
+    margin: 10px 0;
+  }
 </style>
 </head>
 <body>
@@ -49,6 +60,14 @@
   </div>
 
   <div class="card">
+    <h2>Signing in with a Personal Access Token</h2>
+    <p>If the GitHub button gives you an error, or you would rather not use OAuth at all, paste a token below. The screen will reload with the token attached.</p>
+    <input id="token" type="password" autocomplete="off" placeholder="ghp_...  or  github_pat_..." aria-label="Personal access token">
+    <p><button class="button" id="token-go" type="button">Use this token</button></p>
+    <p class="quiet">Create a token at GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Choose <strong>Only select repositories</strong> and tick <strong>escape-the-bullshit</strong>, then under Repository permissions set <strong>Contents</strong> to <strong>Read and write</strong>. GitHub shows the token once. Keep it secret — treat it like a password.</p>
+  </div>
+
+  <div class="card">
     <h2>If the screen above does not come up</h2>
     <p>Use the <strong>built-in local editor</strong> instead. It needs no internet connection, no GitHub account and no sign-in. It writes straight into your content files and rebuilds the site for you.</p>
     <p><a class="button" href="editor.html">Open the local editor</a></p>
@@ -57,7 +76,7 @@
   <div class="card">
     <h2>First time here</h2>
     <ol>
-      <li>Check that <code>admin/config.yml</code> names your own GitHub repository in the <code>repo</code> line.</li>
+      <li>Check that <code>admin/config.yml</code> names your own GitHub repository in the <code>repo</code> line, and that the branch matches the one in the repository.</li>
       <li>Sign in with GitHub. You will be asked to allow access to that one repository only.</li>
       <li>Choose <strong>Pages</strong> or <strong>Topics</strong> from the list on the left.</li>
       <li>Pick a topic, change a sentence, and press <strong>Save</strong>.</li>
@@ -96,28 +115,19 @@
   var details = document.getElementById('details');
   var attempts = document.getElementById('attempts');
 
+  var SOURCES = [
+    { label: 'local copy (admin/sveltia-cms.js)', url: './sveltia-cms.js', local: true },
+    { label: 'unpkg.com', url: 'https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js' },
+    { label: 'jsDelivr', url: 'https://cdn.jsdelivr.net/npm/@sveltia/cms/dist/sveltia-cms.js' }
+  ];
+
   var loaded = false;
 
-  /* One line per source, updated in place rather than appended. */
-  function record(name, ok, note) {
-    var li = null;
-    var items = attempts.getElementsByTagName('li');
-
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].getAttribute('data-source') === name) {
-        li = items[i];
-        break;
-      }
-    }
-
-    if (!li) {
-      li = document.createElement('li');
-      li.setAttribute('data-source', name);
-      attempts.appendChild(li);
-    }
-
+  function record(text, ok) {
+    var li = document.createElement('li');
     li.className = ok ? 'ok' : 'bad';
-    li.textContent = name + ' — ' + (ok ? 'loaded' : 'failed') + (note ? ': ' + note : '');
+    li.textContent = text;
+    attempts.appendChild(li);
   }
 
   function show(html, tone) {
@@ -135,80 +145,64 @@
   function ready() {
     if (loaded) return;
     loaded = true;
-    show('The editing screen is ready. Press <strong>Log in with GitHub</strong> to begin.', 'ok');
+    show('The editing screen is ready. Press <strong>Log in with GitHub</strong> to begin, or paste a token below.', 'ok');
   }
 
-  /* The script is tried one source at a time, in order, and the first one
-     that works wins. Importing them all at once would start the editing
-     screen more than once. */
-  var SOURCES = [
-    {
-      label: 'local copy (admin/sveltia-cms.js)',
-      url: './sveltia-cms.js',
-      optional: true
-    },
-    {
-      label: 'unpkg.com',
-      url: 'https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js'
-    },
-    {
-      label: 'jsDelivr',
-      url: 'https://cdn.jsdelivr.net/npm/@sveltia/cms/dist/sveltia-cms.js'
-    }
-  ];
-
-  /* Check the local copy exists before importing it. Without this, a
-     missing file returns an HTML error page, which the browser then
-     rejects as JavaScript with a confusing message. */
-  function fileExists(url) {
+  /* Check the local copy first, so a missing file gives a clean message
+     instead of a module error. */
+  function localFileExists(url) {
     return fetch(url, { method: 'HEAD', cache: 'no-store' })
       .then(function (response) { return response.ok; })
       .catch(function () { return false; });
   }
 
-  function loadIt(source, onFail) {
-    import(source.url)
-      .then(function () {
-        record(source.label, true);
-        ready();
-      })
-      .catch(function (error) {
-        onFail(error && error.message ? error.message : 'could not be downloaded');
-      });
+  function load(source, index) {
+    record(source.label + ' — trying…');
+    return import(source.url).then(function () {
+      record(source.label + ' — loaded');
+      ready();
+    }).catch(function (error) {
+      var reason = error && error.message ? error.message : 'could not be downloaded';
+      record(source.label + ' — failed: ' + reason);
+      return attempt(index + 1);
+    });
   }
 
+  /* One source at a time, in order, stopping at the first that works. */
   function attempt(index) {
     if (index >= SOURCES.length) {
-      show('<strong>The editing screen could not be started.</strong> None of the three script sources loaded, and the list above says which ones failed. This is a problem reaching those addresses, not a problem with your site. The <a href="editor.html">built-in local editor</a> works without any of it.', 'bad');
+      show('<strong>The editing screen could not be started.</strong> None of the three sources loaded, and the list above says which ones failed. This is a problem reaching those addresses, not a problem with your site. The <a href="editor.html">built-in local editor</a> works without any of it.');
       showErrors();
       return;
     }
 
     var source = SOURCES[index];
 
-    function next(note) {
-      record(source.label, false, note);
-      attempt(index + 1);
-    }
+    if (!source.local) return load(source, index);
 
-    if (source.optional) {
-      fileExists(source.url)
-        .then(function (exists) {
-          if (!exists) {
-            next('file not found (this copy is optional)');
-            return;
-          }
-          loadIt(source, next);
-        })
-        .catch(function () {
-          next('could not be downloaded');
-        });
-    } else {
-      loadIt(source, next);
-    }
+    return localFileExists(source.url).then(function (exists) {
+      if (!exists) {
+        record(source.label + ' — failed: file not found (this copy is optional)');
+        return attempt(index + 1);
+      }
+      return load(source, index);
+    });
   }
 
   attempt(0);
+
+  /* Personal Access Token: reload the page with the token attached. */
+  var tokenInput = document.getElementById('token');
+  var tokenButton = document.getElementById('token-go');
+
+  tokenButton.addEventListener('click', function () {
+    var token = tokenInput.value.trim();
+    if (!token) {
+      tokenInput.focus();
+      return;
+    }
+    window.location.href = window.location.pathname + '?access_token=' + encodeURIComponent(token);
+  });
 })();
 </script>
 </body>

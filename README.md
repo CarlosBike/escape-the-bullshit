@@ -119,17 +119,13 @@ There are two steps: creating the file, and telling the editing screen about it.
 
 Then rewrite the text under each field.
 
-**3. Add it to the editing screen.** Open `admin\config.yml`, find the **Topics** section, and copy any block from it — for example the Broadband one — pasting the copy at the end of the list. Then change three lines:
-
-```yaml
-      - name: my-new-topic
-        label: "My New Topic"
-        file: content/topics/my-new-topic.md
-```
-
-**4. Run `npm run build`.**
+**3. Run `npm run build`.**
 
 That's it. The article appears in the lists, gets its own page at `/topics/my-new-topic/`, and shows up in the editing screen.
+
+**There is no config file to edit.** The editing screen reads the whole `content\topics` folder, so a new article shows up in the editor by itself. (Older versions of this project listed every article in `admin\config.yml` by hand — that is no longer the case.)
+
+**Or skip the file copying altogether.** Press **New** at the top of the Topics list in the editing screen, fill in the labelled boxes, and save. It creates the file for you, named after the title.
 
 **The file name is the address.** `my-new-topic.md` becomes `/topics/my-new-topic/`. If you rename the file, the old address stops working.
 
@@ -153,17 +149,11 @@ description: One sentence for search results.
 
 **3. Write the page content below.**
 
-**4. Add it to `admin\config.yml`** in the **Pages** section, the same way as for an article:
-
-```yaml
-      - name: new-page
-        label: "New Page"
-        file: content/pages/new-page.md
-```
-
-**5. Run `npm run build`.**
+**4. Run `npm run build`.**
 
 Set `nav: false` if you want the page to exist without appearing in the menu.
+
+**There is no config file to edit.** The editing screen reads the whole `content\pages` folder, so a new page shows up in the editor by itself. You can also press **New** at the top of the Pages list in the editing screen and fill in the boxes instead of making the file by hand.
 
 **Links between pages** use a simple form:
 

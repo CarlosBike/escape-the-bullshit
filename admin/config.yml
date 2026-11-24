@@ -30,12 +30,7 @@ backend:
   name: github
   repo: CarlosBike/escape-the-bullshit
   branch: main
-  # Do not add base_url here. That option is for GitHub Enterprise. On
-  # github.com it makes the editing screen ask GitHub for the wrong address
-  # and the reply is a "404 Not Found".
-  # Do not add auth_endpoint here either. Sveltia uses its own sign-in
-  # service by default.
-
+  
 # Images and files you upload through the editing screen
 media_folder: static/uploads
 public_folder: /uploads

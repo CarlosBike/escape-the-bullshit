@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Local editor — Escape the Bullshit</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --ink: #1d1d1f;
+    --muted: #5c5c62;
+    --line: #ddd9d2;
+    --accent: #b3401f;
+    --accent-ink: #8a2f14;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 16px 20px;
+  }
+  header h1 { font-size: 1.25rem; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  header a { color: var(--accent-ink); }
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tabs button {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+  }
+  .tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #list { list-style: none; margin: 0; padding: 0; max-height: 60vh; overflow: auto; }
+  #list li { margin: 0; }
+  #list button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 9px 10px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    font: inherit;
+    cursor: pointer;
+  }
+  #list button:hover { background: #f1ede6; }
+  #list button.active { background: #fff2ec; font-weight: 700; }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+  }
+  .field .hint { font-weight: 400; color: var(--muted); font-size: 0.85rem; display: block; margin-top: 2px; }
+  input[type="text"], input[type="number"], textarea {
+    width: 100%;
+    padding: 9px 10px;
+    font: inherit;
+    font-size: 0.98rem;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  textarea.tall { min-height: 260px; }
+  .check { display: flex; gap: 8px; align-items: center; font-weight: 400; }
+  .check input { width: auto; }
+  .actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 0 4px;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+  }
+  button.primary {
+    background: var(--accent);
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    padding: 11px 20px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.secondary {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font: inherit;
+    cursor: pointer;
+  }
+  #status { font-size: 0.93rem; color: var(--muted); }
+  #status.ok { color: #2f6b2f; font-weight: 600; }
+  #status.bad { color: var(--accent-ink); font-weight: 600; }
+  .hidden { display: none; }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Local editor</h1>
+  <p>Change the writing here, press <strong>Save</strong>, and the site is rebuilt automatically.
+     You do not need an internet connection or a GitHub account for this.
+     <a href="../">View the site</a> ·
+     <a href="index.html">Sveltia screen</a></p>
+</header>
+
+<div class="layout">
+
+  <div class="panel">
+    <div class="tabs">
+      <button id="tab-topics" class="active" type="button">Topics</button>
+      <button id="tab-pages" type="button">Pages</button>
+    </div>
+    <ul id="list"></ul>
+  </div>
+
+  <div class="panel">
+    <div id="empty" class="field">Choose something on the left to start editing.</div>
+
+    <form id="form" class="hidden">
+      <div id="fields"></div>
+
+      <div class="actions">
+        <button class="primary" type="submit">Save and rebuild</button>
+        <span id="status" role="status"></span>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var TOPIC_FIELDS = [
+    { name: 'title', label: 'Title', type: 'text' },
+    { name: 'navTitle', label: 'Menu label', type: 'text', hint: 'Optional. Leave blank to use the title.' },
+    { name: 'blurb', label: 'Short description', type: 'text', hint: 'One line. This shows in the list of topics.' },
+    { name: 'order', label: 'Order', type: 'number', hint: 'Lower numbers appear first.' },
+    { name: 'featured', label: 'Show on the home page', type: 'check' },
+    { name: 'lead', label: 'The introduction', type: 'area' },
+    { name: 'claim', label: 'The claim', type: 'area', hint: 'What is actually being said, and what is really true.' },
+    { name: 'alternatives', label: 'Alternatives', type: 'area', hint: 'What to do instead.' },
+    { name: 'responsible', label: 'Who is responsible?', type: 'area' },
+    { name: 'demand', label: 'What we need them to do', type: 'area' },
+    { name: 'status', label: 'Have they done it yet?', type: 'area' },
+    { name: 'sources', label: 'Sources', type: 'area', hint: 'Where a reader can check this for themselves.' },
+    { name: 'advice', label: 'A word about getting professional advice', type: 'area', hint: 'Say when a reader should speak to a doctor, dentist or adviser.' }
+  ];
+
+  var PAGE_FIELDS = [
+    { name: 'title', label: 'Page title', type: 'text' },
+    { name: 'navLabel', label: 'Menu label', type: 'text', hint: 'Optional. Leave blank to use the title.' },
+    { name: 'order', label: 'Menu order', type: 'number', hint: 'Lower numbers appear first.' },
+    { name: 'nav', label: 'Show in the menu', type: 'check' },
+    { name: 'hero', label: 'Show the big picture at the top', type: 'check' },
+    { name: 'description', label: 'Description', type: 'area', hint: 'Shown in search results. One or two sentences.' }
+  ];
+
+  var listEl = document.getElementById('list');
+  var formEl = document.getElementById('form');
+  var fieldsEl = document.getElementById('fields');
+  var emptyEl = document.getElementById('empty');
+  var statusEl = document.getElementById('status');
+
+  var kind = 'topics';
+  var items = { topics: [], pages: [] };
+  var current = null;
+  var currentKind = 'topics';
+
+  function say(text, tone) {
+    statusEl.textContent = text;
+    statusEl.className = tone || '';
+  }
+
+  function loadList() {
+    return fetch('/api/list').then(function (r) { return r.json(); }).then(function (data) {
+      items = data;
+      renderList();
+    });
+  }
+
+  function renderList() {
+    listEl.innerHTML = '';
+    items[kind].forEach(function (item) {
+      var li = document.createElement('li');
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = item.navLabel || item.title;
+      if (current && current.file === item.file) button.className = 'active';
+      button.addEventListener('click', function () { open(item); });
+      li.appendChild(button);
+      listEl.appendChild(li);
+    });
+  }
+
+  function makeField(spec, value) {
+    var wrap = document.createElement('div');
+    wrap.className = 'field';
+
+    var label = document.createElement('label');
+    label.setAttribute('for', 'f-' + spec.name);
+    label.textContent = spec.label;
+    wrap.appendChild(label);
+
+    if (spec.hint) {
+      var hint = document.createElement('span');
+      hint.className = 'hint';
+      hint.textContent = spec.hint;
+      wrap.appendChild(hint);
+    }
+
+    var input;
+
+    if (spec.type === 'check') {
+      input = document.createElement('input');
+      input.type = 'checkbox';
+      input.id = 'f-' + spec.name;
+      input.checked = value === true || value === 'true';
+      label.setAttribute('for', input.id);
+      label.className = 'check';
+      var text = document.createElement('span');
+      text.textContent = spec.label;
+      label.textContent = '';
+      label.appendChild(input);
+      label.appendChild(text);
+      if (spec.hint) label.appendChild(hint);
+    } else if (spec.type === 'area') {
+      input = document.createElement('textarea');
+      input.id = 'f-' + spec.name;
+      input.value = value == null ? '' : String(value);
+    } else {
+      input = document.createElement('input');
+      input.id = 'f-' + spec.name;
+      input.type = spec.type === 'number' ? 'number' : 'text';
+      input.value = value == null ? '' : String(value);
+    }
+
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  function open(item) {
+    current = item;
+    currentKind = kind;
+    say('Loading…');
+
+    fetch('/api/file?path=' + encodeURIComponent(item.file))
+      .then(function (r) { return r.json(); })
+      .then(function (file) {
+        if (file.error) {
+          say(file.error, 'bad');
+          return;
+        }
+
+        fieldsEl.innerHTML = '';
+        emptyEl.classList.add('hidden');
+        formEl.classList.remove('hidden');
+
+        var specs = currentKind === 'topics' ? TOPIC_FIELDS : PAGE_FIELDS;
+
+        specs.forEach(function (spec) {
+          fieldsEl.appendChild(makeField(spec, file.data[spec.name]));
+        });
+
+        var bodyLabel = document.createElement('div');
+        bodyLabel.className = 'field';
+
+        var bodyTitle = document.createElement('label');
+        bodyTitle.setAttribute('for', 'f-body');
+        bodyTitle.textContent = currentKind === 'topics'
+          ? 'Anything extra (optional)'
+          : 'Page content';
+        bodyLabel.appendChild(bodyTitle);
+
+        var bodyHint = document.createElement('span');
+        bodyHint.className = 'hint';
+        bodyHint.textContent = currentKind === 'topics'
+          ? 'Anything else you want to add under the article. Usually left empty.'
+          : 'The main text of the page. Plain writing is fine. Keep [[alltopics]] and [[featured]] exactly as they are if they are already there.';
+        bodyLabel.appendChild(bodyHint);
+
+        var body = document.createElement('textarea');
+        body.id = 'f-body';
+        body.className = 'tall';
+        body.value = (file.body || file.data.body || '').replace(/^\s+/, '');
+        bodyLabel.appendChild(body);
+
+        fieldsEl.appendChild(bodyLabel);
+
+        renderList();
+        say('Loaded. Make your changes and press Save.');
+        window.scrollTo(0, 0);
+      })
+      .catch(function (error) {
+        say('Could not load that file: ' + error.message, 'bad');
+      });
+  }
+
+  function collect() {
+    var specs = currentKind === 'topics' ? TOPIC_FIELDS : PAGE_FIELDS;
+    var data = {};
+
+    specs.forEach(function (spec) {
+      var input = document.getElementById('f-' + spec.name);
+      if (!input) return;
+
+      if (spec.type === 'check') {
+        data[spec.name] = input.checked;
+      } else if (spec.type === 'number') {
+        data[spec.name] = input.value === '' ? '' : Number(input.value);
+      } else {
+        data[spec.name] = input.value;
+      }
+    });
+
+    var body = document.getElementById('f-body');
+    return { data: data, body: body ? body.value : '' };
+  }
+
+  formEl.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (!current) return;
+
+    say('Saving…');
+    var payload = collect();
+    payload.path = current.file;
+
+    fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (result) {
+        if (result.error) {
+          say(result.error, 'bad');
+          return;
+        }
+        say('Saved. Rebuilding the site…');
+        return fetch('/api/build', { method: 'POST' })
+          .then(function (r) { return r.json(); })
+          .then(function (build) {
+            if (build.ok) {
+              say('Saved and rebuilt. Open the site to see it.', 'ok');
+            } else {
+              say('Saved, but the build reported a problem. Check the terminal window for the message.', 'bad');
+            }
+          });
+      })
+      .catch(function (error) {
+        say('Could not save: ' + error.message, 'bad');
+      });
+  });
+
+  document.getElementById('tab-topics').addEventListener('click', function () {
+    kind = 'topics';
+    current = null;
+    this.classList.add('active');
+    document.getElementById('tab-pages').classList.remove('active');
+    formEl.classList.add('hidden');
+    emptyEl.classList.remove('hidden');
+    renderList();
+  });
+
+  document.getElementById('tab-pages').addEventListener('click', function () {
+    kind = 'pages';
+    current = null;
+    this.classList.add('active');
+    document.getElementById('tab-topics').classList.remove('active');
+    formEl.classList.add('hidden');
+    emptyEl.classList.remove('hidden');
+    renderList();
+  });
+
+  loadList();
+})();
+</script>
+</body>
+</html>

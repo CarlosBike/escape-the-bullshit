@@ -277,6 +277,14 @@ function build() {
     page.slug = page.meta.slug || page.file.replace(/\.md$/i, '');
     page.order = toNumber(page.meta.order, 999);
     page.navLabel = page.meta.navLabel || page.meta.title || page.slug;
+
+    /* The editing screen may store the page text below the --- lines or, in
+       some versions, as a "body" field inside the frontmatter. Accept both,
+       so saving a page in the editor cannot blank it. */
+    if (!page.body.trim() && typeof page.meta.body === 'string') {
+      page.body = page.meta.body;
+    }
+
     if (!page.meta.title) fail(page.path + " is missing 'title'");
     if (!page.body.trim()) fail(page.path + ' has no content');
     return page;

@@ -58,7 +58,9 @@ function checkDir(dirName, fields) {
       }
     });
 
-    if (dirName === 'pages' && !parsed.body.trim()) {
+    if (dirName === 'pages' &&
+        !parsed.body.trim() &&
+        !String(parsed.data.body || '').trim()) {
       fail(relative + ' has no content');
     }
 

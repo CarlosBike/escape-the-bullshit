@@ -36,6 +36,7 @@
   #attempts li { padding: 4px 0; border-bottom: 1px dotted #ddd9d2; }
   #attempts .ok { color: #3f7a3f; font-weight: 700; }
   #attempts .bad { color: #b3401f; }
+  #attempts .pending { color: #5c5c62; }
 </style>
 </head>
 <body>
@@ -58,18 +59,32 @@
     <h2>First time here</h2>
     <ol>
       <li>Check that <code>admin/config.yml</code> names your own GitHub repository in the <code>repo</code> line.</li>
-      <li>Sign in with GitHub. You will be asked to allow access to that one repository only.</li>
+      <li>Press <strong>Log in with GitHub</strong>. Approve access to the one repository and you are taken back here.</li>
       <li>Choose <strong>Pages</strong> or <strong>Topics</strong> from the list on the left.</li>
       <li>Pick a topic, change a sentence, and press <strong>Save</strong>.</li>
-      <li>Back in your terminal, run <code>npm run sync</code> to pull the change down and rebuild.</li>
+      <li>Sveltia commits the change to GitHub for you. Run <code>npm run sync</code> on your own computer to pull it down and rebuild.</li>
       <li>Reload the site in your browser to see it.</li>
     </ol>
+  </div>
+
+  <div class="card">
+    <h2>If sign-in does not work</h2>
+    <p>Check that <code>admin/config.yml</code> contains <code>name: github</code> and <code>repo: CarlosBike/escape-the-bullshit</code>. Do not add a <code>base_url</code> line — that setting belongs to GitHub Enterprise and makes the editing screen ask GitHub for the wrong address.</p>
+    <p>If the screen asks for a token instead of offering a GitHub button, create a fine-grained token in GitHub under <strong>Settings → Developer settings → Personal access tokens</strong>, limited to this one repository, with <strong>Contents: read and write</strong>. GitHub shows the token only once.</p>
+    <p>Your offline editor always works and needs no sign-in at all:</p>
+    <p><a class="button" href="editor.html">Open the local editor</a></p>
   </div>
 
   <div class="card">
     <h2>Adding something new</h2>
     <p>Press <strong>New</strong> at the top of the list. For Topics you get a labelled box for each section of an article; for Pages you get a title, a menu label and one large box for the page text. Fill it in and save — no other file needs changing.</p>
     <p>The address of a new page or article comes from the file name, which the editing screen creates from the title. Renaming the file later changes the address, so leave it alone once you have shared a link.</p>
+  </div>
+
+  <div class="card">
+    <h2>Serving the editing screen from your own site</h2>
+    <p>The list above shows where the editing screen is being loaded from. The first line is your own copy of the program, kept in <code>admin/sveltia-cms.js</code>. The other two are public copies on the internet.</p>
+    <p>To use your own copy, open <code>https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js</code> in your browser, save the file into the <code>admin</code> folder of your project, name it exactly <code>sveltia-cms.js</code>, and run <code>npm run build</code>. That removes the connection to another company's website, and the editing screen still works if they are down.</p>
   </div>
 
   <div class="card">
@@ -81,16 +96,6 @@
 <script>
 (function () {
   'use strict';
-
-  /* Try each source in turn, one at a time, and stop at the first that
-     works. The local copy comes first so the site depends on no third
-     party at all. If you have not put sveltia-cms.js in the admin folder
-     the first attempt simply fails and the next one is tried. */
-  var SOURCES = [
-    { label: 'local copy (admin/sveltia-cms.js)', url: 'sveltia-cms.js' },
-    { label: 'unpkg.com', url: 'https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js' },
-    { label: 'jsDelivr', url: 'https://cdn.jsdelivr.net/npm/@sveltia/cms/dist/sveltia-cms.js' }
-  ];
 
   var errors = [];
 
@@ -108,12 +113,18 @@
 
   var loaded = false;
 
-  function record(name, state, note) {
+  /* Tried one after another, stopping at the first that works, so the
+     editing screen only ever starts once. */
+  var SOURCES = [
+    { label: 'local copy (admin/sveltia-cms.js)', url: './sveltia-cms.js', local: true },
+    { label: 'unpkg.com', url: 'https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js' },
+    { label: 'jsDelivr', url: 'https://cdn.jsdelivr.net/npm/@sveltia/cms/dist/sveltia-cms.js' }
+  ];
+
+  function record(label, state, note) {
     var li = document.createElement('li');
-    li.className = state === 'ok' ? 'ok' : (state === 'bad' ? 'bad' : '');
-    li.textContent = name + ' — ' +
-      (state === 'ok' ? 'loaded' : (state === 'bad' ? 'failed' : 'trying')) +
-      (note ? ': ' + note : '');
+    li.className = state === 'loaded' ? 'ok' : (state === 'failed' ? 'bad' : 'pending');
+    li.textContent = label + ' — ' + state + (note ? ': ' + note : '');
     attempts.appendChild(li);
   }
 
@@ -135,30 +146,60 @@
     show('The editing screen is ready. Press <strong>Log in with GitHub</strong> to begin.', 'ok');
   }
 
-  function allFailed() {
-    show('<strong>The editing screen could not be started.</strong> None of the sources loaded, and the list above says which ones failed. This is a problem reaching those addresses, not a problem with your site. The <a href="editor.html">built-in local editor</a> works without any of it.');
-    showErrors();
+  function note(error) {
+    return error && error.message ? error.message : 'could not be loaded';
   }
 
-  function trySource(index) {
+  /* Check the local file is really there before trying to import it.
+     Importing a missing file produces a confusing "corrupted content"
+     message, because the server sends back an HTML error page. */
+  function localFileExists(url) {
+    return fetch(url, { method: 'HEAD', cache: 'no-store' })
+      .then(function (response) { return response.ok; })
+      .catch(function () { return false; });
+  }
+
+  function trySource(source) {
+    if (source.local) {
+      return localFileExists(source.url).then(function (exists) {
+        if (!exists) {
+          record(source.label, 'failed', 'file not found (this copy is optional)');
+          return false;
+        }
+        return import(source.url)
+          .then(function () { record(source.label, 'loaded'); return true; })
+          .catch(function (error) { record(source.label, 'failed', note(error)); return false; });
+      });
+    }
+
+    return import(source.url)
+      .then(function () { record(source.label, 'loaded'); return true; })
+      .catch(function (error) { record(source.label, 'failed', note(error)); return false; });
+  }
+
+  function attempt(index) {
     if (index >= SOURCES.length) {
-      allFailed();
+      show('<strong>The editing screen could not be started.</strong> None of the three sources could be loaded, and the list above says which ones failed. This is a problem reaching those addresses, not a problem with your site. The <a href="editor.html">built-in local editor</a> works without any of it.');
+      showErrors();
       return;
     }
 
     var source = SOURCES[index];
     record(source.label, 'trying');
 
-    import(source.url).then(function () {
-      record(source.label, 'ok');
-      ready();
-    }).catch(function (error) {
-      record(source.label, 'bad', 'could not be loaded');
-      errors.push(source.label + ': ' + (error && error.message ? error.message : String(error)));
-      trySource(index + 1);
+    trySource(source).then(function (ok) {
+      if (ok) {
+        ready();
+        return;
+      }
+      attempt(index + 1);
     });
   }
 
+  attempt(0);
+
+  /* The CMS takes over the whole page once it starts. Watch for that, so
+     the message is replaced even if the import resolves slowly. */
   var waited = 0;
 
   var timer = setInterval(function () {
@@ -172,8 +213,8 @@
       return;
     }
 
-    /* The CMS takes over the whole page once it starts. If our text has gone,
-       the editor is running and this message is simply no longer visible. */
+    /* Our text has gone, which means the editor is running and this
+       message is simply no longer visible. */
     if (!document.getElementById('status')) {
       clearInterval(timer);
       return;
@@ -181,12 +222,12 @@
 
     if (waited >= 45000) {
       clearInterval(timer);
-      show('<strong>The editing screen has not started.</strong> The list above shows which sources were tried. The usual cause is a blocked connection or an extension that stops scripts running. The <a href="editor.html">built-in local editor</a> works without any of that.');
-      showErrors();
+      if (!loaded) {
+        show('<strong>The editing screen has not started.</strong> The list above shows which sources were tried. The usual cause is a blocked connection or an extension that stops scripts running. The <a href="editor.html">built-in local editor</a> works without any of that.');
+        showErrors();
+      }
     }
   }, 500);
-
-  trySource(0);
 })();
 </script>
 </body>

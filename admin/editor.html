@@ -321,7 +321,9 @@
         var body = document.createElement('textarea');
         body.id = 'f-body';
         body.className = 'tall';
-        body.value = (file.body || '').replace(/^\s+/, '');
+        /* The text may sit below the --- lines, or, when it was saved in the
+           editing screen, in a "body" field inside the frontmatter. */
+        body.value = (file.body || file.data.body || '').replace(/^\s+/, '');
         bodyLabel.appendChild(body);
 
         fieldsEl.appendChild(bodyLabel);

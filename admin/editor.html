@@ -321,8 +321,9 @@
         var body = document.createElement('textarea');
         body.id = 'f-body';
         body.className = 'tall';
-        /* The text may sit below the --- lines, or, when it was saved in the
-           editing screen, in a "body" field inside the frontmatter. */
+        /* The page text may be below the --- lines, or — when the editing
+           screen saved it — in a "body" field inside the front matter.
+           Read both, so a page never appears blank. */
         body.value = (file.body || file.data.body || '').replace(/^\s+/, '');
         bodyLabel.appendChild(body);
 

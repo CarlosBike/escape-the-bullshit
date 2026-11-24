@@ -30,11 +30,12 @@ backend:
   name: github
   repo: CarlosBike/escape-the-bullshit
   branch: main
-  # Do not add base_url or auth_endpoint here.
+  # Do not add "base_url" here.
   #   base_url is for GitHub Enterprise. On github.com it makes the editing
-  #   screen ask GitHub for the wrong address and the answer is a 404.
-  #   auth_endpoint is for hosting providers' sign-in, which the GitHub
-  #   backend does not use.
+  #   screen ask GitHub for the wrong address, and GitHub answers with a
+  #   "404 Not Found" JSON error even though everything else is correct.
+  # Do not add "auth_endpoint" here either. The default sign-in route is the
+  # one that works with a normal github.com repository.
 
 # Images and files you upload through the editing screen
 media_folder: static/uploads

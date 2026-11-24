@@ -30,7 +30,7 @@ backend:
   name: github
   repo: CarlosBike/escape-the-bullshit
   branch: main
-  base_url: https://api.github.com
+  
 
 # Images and files you upload through the editing screen
 media_folder: static/uploads

@@ -1,5 +1,5 @@
 ---
-title: My test topic
+title: My test topics
 navTitle: Click this for test
 blurb: It's only a test topic for now. Delete it.
 order: 1
